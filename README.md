@@ -1,10 +1,17 @@
 # cn_timer_bot
-
-A Clojure library designed to ... well, that part is up to you.
+(WIP)
+A clojure telegram timing bot 
 
 ## Usage
+make a bot with bot father
+add a file `bot-token.txt` with your token.
 
-FIXME
+commands:
+```
+/info (get target time)
+/until (get time until target time)
+/set (set target time DD.MM.YYYY HH:MM)
+```
 
 ## License
 
@@ -20,4 +27,3 @@ Public License, v. 2.0 are satisfied: GNU General Public License as published by
 the Free Software Foundation, either version 2 of the License, or (at your
 option) any later version, with the GNU Classpath Exception which is available
 at https://www.gnu.org/software/classpath/license.html.
-# clj-telegram-timing-bot
