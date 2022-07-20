@@ -8,7 +8,6 @@
                 :latest-message-id (ref 0)
                 :datetime-format-str "dd.MM.yyyy HH:mm"
                 :bot-token (string/trim (slurp "bot-token.txt"))})
-
 (defn getURL [key]
   (let [base-url  "https://api.telegram.org/bot"
         url (str base-url (bot-state :bot-token))]
@@ -83,16 +82,14 @@
 (defn print-duration-human-readable [duration]
   (let [days (.toDays duration)
         hours (mod (.toHours duration) 24)
-        minutes (mod (.toMinutes duration) 60)
-        seconds (mod (.toSeconds duration) 60)]
-    (if (.isPositive duration)
+        minutes (mod (.toMinutes duration) 60)]
+    (if (.isNegative duration)
+      "This is history."
       (string/join " "
                    (list days "days"
                          hours "hours"
                          minutes "minutes"
-                         seconds "seconds"
-                         "❤️"))
-      "This is history.")))
+                         "❤️")))))
 
 
 (defn print-time-until-target []
