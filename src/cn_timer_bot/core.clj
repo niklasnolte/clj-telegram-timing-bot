@@ -1,7 +1,8 @@
 (ns cn-timer-bot.core (:require [clj-http.client :as client]
                                 [clojure.data.json :as json]
                                 [clojure.string :as string]
-                                [java-time :as date]))
+                                [java-time :as date])
+    (:gen-class))
 
 (def bot-state {:target (ref (date/local-date-time))
                 :latest-message-id (ref 0)
@@ -84,18 +85,18 @@
         hours (mod (.toHours duration) 24)
         minutes (mod (.toMinutes duration) 60)
         seconds (mod (.toSeconds duration) 60)]
-    (string/join " "
-               (list days "days"
-                     hours "hours"
-                     minutes "minutes"
-                     seconds "seconds"
-                     "❤️"))))
+    (if (.isPositive duration)
+      (string/join " "
+                   (list days "days"
+                         hours "hours"
+                         minutes "minutes"
+                         seconds "seconds"
+                         "❤️"))
+      "This is history.")))
 
 
 (defn print-time-until-target []
   (print-duration-human-readable (date/duration (date/local-date-time) @(bot-state :target))))
-
-(print-time-until-target)
 
 (defn print-target-time []
   (str @(bot-state :target)))
@@ -124,4 +125,5 @@
         (do (doall (map respond new-messages))
             (mark-read new-messages))))))
 
-(wait-and-respond)
+(defn -main []
+  (wait-and-respond))
