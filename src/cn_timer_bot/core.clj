@@ -7,7 +7,7 @@
 (def bot-state {:target (ref (date/local-date-time))
                 :latest-message-id (ref 0)
                 :datetime-format-str "dd.MM.yyyy HH:mm"
-                :bot-token (string/join "" (drop-last (slurp "bot-token.txt")))})
+                :bot-token (string/trim (slurp "bot-token.txt"))})
 
 (defn getURL [key]
   (let [base-url  "https://api.telegram.org/bot"
