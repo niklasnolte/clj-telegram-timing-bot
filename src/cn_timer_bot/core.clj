@@ -56,7 +56,7 @@
 
 (defn get-command-from [text]
   (let [cmd (first (string/split text #" "))]
-    (case cmd
+    (case (first (string/split cmd #"@"))
       "/set" :set
       "/info" :info
       "/until" :until
