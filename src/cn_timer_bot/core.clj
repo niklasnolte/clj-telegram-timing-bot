@@ -8,6 +8,7 @@
                 :latest-message-id (ref 0)
                 :datetime-format-str "dd.MM.yyyy HH:mm"
                 :bot-token (string/trim (slurp "bot-token.txt"))})
+
 (defn getURL [key]
   (let [base-url  "https://api.telegram.org/bot"
         url (str base-url (bot-state :bot-token))]
@@ -35,7 +36,6 @@
      (extractBody return)))
   ([] (get-updates nil)))
 
-
 (defn id-of [update]
   (update "update_id"))
 
@@ -47,7 +47,6 @@
                find-latest-message
                id-of
                (ref-set (bot-state :latest-message-id)))))
-
 (defn sendMessage [chat-id text]
   (let [url (getURL :send)
         return (client/post url {:form-params
@@ -91,7 +90,6 @@
                          minutes "minutes"
                          "❤️")))))
 
-
 (defn print-time-until-target []
   (print-duration-human-readable (date/duration (date/local-date-time) @(bot-state :target))))
 
@@ -109,10 +107,13 @@
   (or (message "message") (message "edited_message")))
 
 (defn respond [message]
-  (let [message (message-or-edited message)
-        chat-id ((message "chat") "id")
-        text (respond-to (message "text"))]
-    (sendMessage chat-id text)))
+  (try
+    (let [message (message-or-edited message)
+          chat-id ((message "chat") "id")
+          text (respond-to (message "text"))]
+      (sendMessage chat-id text))
+    (catch java.lang.NullPointerException _ ; in case the message looks weird, just ignore
+      nil)))
 
 (defn wait-and-respond []
   (while true
