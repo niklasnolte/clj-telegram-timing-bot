@@ -3,17 +3,14 @@
                                 [clojure.string :as string]
                                 [java-time :as date]))
 
-; definitions
-(def target (ref (date/local-date-time)))
-(def latest-message-id (ref 0))
-(def datetime-format-str "dd.MM.yyyy HH:mm")
-(def bot-token (string/join "" (drop-last (slurp "bot-token.txt")))) ; don't take \n
-
-bot-token
+(def bot-state {:target (ref (date/local-date-time))
+                :latest-message-id (ref 0)
+                :datetime-format-str "dd.MM.yyyy HH:mm"
+                :bot-token (string/join "" (drop-last (slurp "bot-token.txt")))})
 
 (defn getURL [key]
   (let [base-url  "https://api.telegram.org/bot"
-        url (str base-url bot-token)]
+        url (str base-url (bot-state :bot-token))]
     (case key
       :updates (str url "/GetUpdates")
       :getme (str url "/GetMe")
@@ -49,7 +46,7 @@ bot-token
   (dosync (->> updates
                find-latest-message
                id-of
-               (ref-set latest-message-id))))
+               (ref-set (bot-state :latest-message-id)))))
 
 (defn sendMessage [chat-id text]
   (let [url (getURL :send)
@@ -67,22 +64,41 @@ bot-token
       :not-a-command)))
 
 (defn parse-time [time-str]
-  (date/local-date-time datetime-format-str time-str))
+  (date/local-date-time (bot-state :datetime-format-str) time-str))
 
 (defn set-time [text]
   (let [args (drop 1 (string/split text #" "))]
     (try ; "DD:MM:YYYY HH:MM"
-      (dosync (ref-set target (parse-time (string/join " " args))))
+      (dosync
+       (ref-set
+        (bot-state :target)
+        (parse-time
+         (string/join " " args))))
       "Time set."
       ; for some reason i cannot catch DateTimeParseExceptions..
       (catch java.lang.RuntimeException _
         "Usage: \"/set DD.MM.YYYY HH:MM\""))))
 
+(defn print-duration-human-readable [duration]
+  (let [days (.toDays duration)
+        hours (mod (.toHours duration) 24)
+        minutes (mod (.toMinutes duration) 60)
+        seconds (mod (.toSeconds duration) 60)]
+    (string/join " "
+               (list days "days"
+                     hours "hours"
+                     minutes "minutes"
+                     seconds "seconds"
+                     "❤️"))))
+
+
 (defn print-time-until-target []
-  (str (date/duration @target (date/local-date-time))))
+  (print-duration-human-readable (date/duration (date/local-date-time) @(bot-state :target))))
+
+(print-time-until-target)
 
 (defn print-target-time []
-  (str @target))
+  (str @(bot-state :target)))
 
 (defn respond-to [text]
   (case (get-command-from text)
@@ -102,7 +118,7 @@ bot-token
 
 (defn wait-and-respond []
   (while true
-    (let [new-messages (get-updates (+ 1 @latest-message-id))] ;this is waiting
+    (let [new-messages (get-updates (+ 1 @(bot-state :latest-message-id)))] ;this is waiting
       (if (or (nil? new-messages) (= new-messages []))
         (println "waiting")
         (do (doall (map respond new-messages))
