@@ -124,4 +124,7 @@
             (mark-read new-messages))))))
 
 (defn -main []
-  (wait-and-respond))
+  (while true
+    (try
+      (wait-and-respond)
+      (catch Exception e (str "caught exception: " (.getMessage e))))))
